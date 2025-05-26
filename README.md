@@ -169,14 +169,21 @@ npm run build
    ```
 5. Save and restart the extension
 
-### Claude.ai Code
+### Claude Code
 
-1. Open Claude Code terminal
-2. Run this single command:
+1. Install Claude Code if you haven't already:
+   ```bash
+   npm install -g @anthropic-ai/claude-code
+   ```
+   See [Claude Code Overview](https://docs.anthropic.com/en/docs/claude-code/overview) for more details.
+
+2. Run this single command to add the MCP server:
    ```bash
    claude mcp add-json namecheap-registrar '{"command":"node","args":["/absolute/path/to/namecheap-mcp/dist/index.js"],"env":{"NAMECHEAP_USERNAME":"your_username","NAMECHEAP_API_KEY":"your_api_key","NODE_ENV":"production"}}'
    ```
    (Replace `/absolute/path/to/namecheap-mcp` with your actual path and add your credentials)
+
+For more information on MCP with Claude Code, see the [MCP Tutorial](https://docs.anthropic.com/en/docs/claude-code/tutorials#set-up-model-context-protocol-mcp).
 
 ## Usage Examples
 
