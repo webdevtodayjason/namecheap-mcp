@@ -172,14 +172,11 @@ npm run build
 ### Claude.ai Code
 
 1. Open Claude Code terminal
-2. Run the MCP setup command:
+2. Run this single command:
    ```bash
-   mcp add namecheap-registrar
+   claude mcp add-json namecheap-registrar '{"command":"node","args":["/absolute/path/to/namecheap-mcp/dist/index.js"],"env":{"NAMECHEAP_USERNAME":"your_username","NAMECHEAP_API_KEY":"your_api_key","NODE_ENV":"production"}}'
    ```
-3. When prompted, provide:
-   - Command: `node`
-   - Args: `/absolute/path/to/namecheap-mcp/dist/index.js`
-   - Environment variables as shown above
+   (Replace `/absolute/path/to/namecheap-mcp` with your actual path and add your credentials)
 
 ## Usage Examples
 
