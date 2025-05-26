@@ -39,8 +39,8 @@ To use the Namecheap API, your account must meet **one** of these requirements:
 ### 1. Clone and Install
 
 ```bash
-git clone https://github.com/webdevtodayjason/mcp-namecheap-registrar.git
-cd mcp-namecheap-registrar
+git clone https://github.com/webdevtodayjason/namecheap-mcp.git
+cd namecheap-mcp
 npm install
 ```
 
@@ -111,7 +111,7 @@ npm run build
      "mcpServers": {
        "namecheap-registrar": {
          "command": "node",
-         "args": ["/absolute/path/to/mcp-namecheap-registrar/dist/index.js"],
+         "args": ["/absolute/path/to/namecheap-mcp/dist/index.js"],
          "env": {
            "NAMECHEAP_USERNAME": "your_username",
            "NAMECHEAP_API_KEY": "your_api_key",
@@ -136,7 +136,7 @@ npm run build
      "mcp.servers": {
        "namecheap-registrar": {
          "command": "node",
-         "args": ["/absolute/path/to/mcp-namecheap-registrar/dist/index.js"],
+         "args": ["/absolute/path/to/namecheap-mcp/dist/index.js"],
          "env": {
            "NAMECHEAP_USERNAME": "your_username",
            "NAMECHEAP_API_KEY": "your_api_key",
@@ -158,7 +158,7 @@ npm run build
    {
      "namecheap-registrar": {
        "command": "node",
-       "args": ["/absolute/path/to/mcp-namecheap-registrar/dist/index.js"],
+       "args": ["/absolute/path/to/namecheap-mcp/dist/index.js"],
        "env": {
          "NAMECHEAP_USERNAME": "your_username",
          "NAMECHEAP_API_KEY": "your_api_key",
@@ -178,7 +178,7 @@ npm run build
    ```
 3. When prompted, provide:
    - Command: `node`
-   - Args: `/absolute/path/to/mcp-namecheap-registrar/dist/index.js`
+   - Args: `/absolute/path/to/namecheap-mcp/dist/index.js`
    - Environment variables as shown above
 
 ## Usage Examples
@@ -335,7 +335,7 @@ For testing without real purchases:
 ### Project Structure
 
 ```
-mcp-namecheap-registrar/
+namecheap-mcp/
 ├── src/
 │   ├── index.ts              # Main server entry
 │   ├── tools/                # MCP tool implementations
@@ -389,8 +389,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- 🐛 [Report Issues](https://github.com/webdevtodayjason/mcp-namecheap-registrar/issues)
-- 💬 [Discussions](https://github.com/webdevtodayjason/mcp-namecheap-registrar/discussions)
+- 🐛 [Report Issues](https://github.com/webdevtodayjason/namecheap-mcp/issues)
+- 💬 [Discussions](https://github.com/webdevtodayjason/namecheap-mcp/discussions)
 - 📧 Email: jason@webdevtoday.com
 
 ## Acknowledgments
