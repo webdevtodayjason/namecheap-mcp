@@ -1,24 +1,41 @@
 {
-  "name": "namecheap-domains-mcp",
-  "version": "1.0.0",
-  "description": "Cursor MCP for checking and purchasing domains via Namecheap",
+  "name": "@webdevtoday/nc-mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server for Namecheap domain registration - check availability, get pricing, and register domains",
   "main": "dist/index.js",
   "type": "module",
+  "bin": {
+    "nc-mcp-server": "./bin/nc-mcp-server.js"
+  },
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "tsc --watch & nodemon dist/index.js",
-    "lint": "eslint src/**/*.ts"
+    "lint": "eslint src/**/*.ts",
+    "prepublishOnly": "npm run build"
   },
+  "files": [
+    "dist/",
+    "bin/",
+    "registrant-profile.example.json"
+  ],
   "keywords": [
-    "cursor",
     "mcp",
     "namecheap",
     "domains",
-    "registrar"
+    "registrar",
+    "model-context-protocol"
   ],
-  "author": "Cursor",
+  "author": "WebDevToday",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/webdevtodayjason/nc-mcp-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/webdevtodayjason/nc-mcp-server/issues"
+  },
+  "homepage": "https://github.com/webdevtodayjason/nc-mcp-server#readme",
   "dependencies": {
     "axios": "^1.5.0",
     "cors": "^2.8.5",

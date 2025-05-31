@@ -1,13 +1,8 @@
-# MCP Namecheap Registrar
+# Namecheap MCP Server
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen)](https://nodejs.org)
-[![MCP Framework](https://img.shields.io/badge/MCP-Compatible-blue)](https://modelcontextprotocol.io)
+An MCP (Model Context Protocol) server that provides tools for interacting with the Namecheap domain registration API. Check domain availability, get pricing, and register domains through Claude Desktop or any MCP-compatible client.
 
-A Model Context Protocol (MCP) server that enables AI assistants to interact with Namecheap's domain registration API. Check domain availability, get pricing, and register domains directly through Claude Desktop, Cursor, Roo Code, or any MCP-compatible client.
-
-
-## ⚠️ Important Security Warning ⚠️
+## ⚠️ Important Security Warning
 
 **This tool uses the Namecheap live API by default and can make REAL purchases that will charge your Namecheap account.** Always double-check domain registration commands before confirming purchases.
 
@@ -17,13 +12,10 @@ A Model Context Protocol (MCP) server that enables AI assistants to interact wit
 - 💰 **TLD Pricing** - Get current pricing for any top-level domain
 - 🛒 **Domain Registration** - Register domains with WhoisGuard privacy protection
 - 🔒 **Secure API Integration** - Uses Namecheap's secure API with IP whitelisting
-- 🤖 **Multi-Client Support** - Works with Claude Desktop, Cursor, Roo Code, and more
 - 🧪 **Sandbox Mode** - Test without making real purchases
 
 ## Prerequisites
 
-- Node.js 16.0.0 or higher
-- npm or yarn package manager
 - Namecheap account with API access enabled
 - Your IP address whitelisted in Namecheap
 
@@ -34,47 +26,67 @@ To use the Namecheap API, your account must meet **one** of these requirements:
 - Have at least $50 on your account balance
 - Have at least $50 spent within the last 2 years
 
-## Quick Start
+## Installation
 
-### 1. Clone and Install
-
-```bash
-git clone https://github.com/webdevtodayjason/namecheap-mcp.git
-cd namecheap-mcp
-npm install
-```
-
-### 2. Configure Environment
-
-Create a `.env` file:
+You can run this MCP server using `npx` without installing it locally:
 
 ```bash
-cp .env.example .env
+npx @webdevtoday/nc-mcp-server
 ```
 
-Edit `.env` with your credentials:
+## Configuration
 
-```env
-NAMECHEAP_USERNAME=your_namecheap_username
-NAMECHEAP_API_KEY=your_api_key_here
-NODE_ENV=production  # Use 'sandbox' for testing
+### Claude Desktop
+
+Add the following to your Claude Desktop configuration:
+
+```json
+{
+  "mcpServers": {
+    "namecheap": {
+      "command": "npx",
+      "args": ["-y", "@webdevtoday/nc-mcp-server"],
+      "env": {
+        "NC_USERNAME": "your_namecheap_username",
+        "NC_API_KEY": "your_namecheap_api_key",
+        "NODE_ENV": "production"
+      }
+    }
+  }
+}
 ```
 
-### 3. Set Up Registrant Profile
+To find your Claude Desktop configuration:
+1. Open Claude Desktop
+2. Go to Settings → Developer → Edit Config
 
-```bash
-cp registrant-profile.example.json registrant-profile.json
-```
+### Setting up Registrant Profile
 
-Edit `registrant-profile.json` with your contact details for domain registrations.
+For domain registration, you'll need to provide registrant contact information. You can do this in two ways:
 
-### 4. Build the Project
+1. **Environment Variable (Recommended for npx)**:
+   Add a `REGISTRANT_PROFILE` environment variable with JSON data:
+   ```json
+   {
+     "mcpServers": {
+       "namecheap": {
+         "command": "npx",
+         "args": ["-y", "@webdevtoday/nc-mcp-server"],
+         "env": {
+           "NC_USERNAME": "your_username",
+           "NC_API_KEY": "your_api_key",
+           "NODE_ENV": "production",
+           "REGISTRANT_PROFILE": "{\"firstName\":\"John\",\"lastName\":\"Doe\",\"address1\":\"123 Main St\",\"city\":\"New York\",\"stateProvince\":\"NY\",\"postalCode\":\"10001\",\"country\":\"US\",\"phone\":\"+1.2125551234\",\"email\":\"john@example.com\"}"
+         }
+       }
+     }
+   }
+   ```
 
-```bash
-npm run build
-```
+2. **Local File**: 
+   If running locally, create a `registrant-profile.json` file in your working directory.
 
-### 5. Whitelist Your IP
+## Whitelisting Your IP
 
 1. Find your IP address:
    ```bash
@@ -83,171 +95,6 @@ npm run build
 2. Log in to Namecheap
 3. Go to **Profile → Tools → API Access**
 4. Add your IP to the whitelist
-
-## Configuration for Different Clients
-
-### Claude Desktop
-
-1. **Find the configuration file:**
-   
-   **macOS:**
-   ```bash
-   open ~/Library/Application\ Support/Claude/claude_desktop_config.json
-   ```
-   
-   **Windows:**
-   ```bash
-   notepad %APPDATA%\Claude\claude_desktop_config.json
-   ```
-   
-   **Linux:**
-   ```bash
-   nano ~/.config/Claude/claude_desktop_config.json
-   ```
-
-2. **Add the server configuration:**
-   ```json
-   {
-     "mcpServers": {
-       "namecheap-registrar": {
-         "command": "node",
-         "args": ["/absolute/path/to/namecheap-mcp/dist/index.js"],
-         "env": {
-           "NAMECHEAP_USERNAME": "your_username",
-           "NAMECHEAP_API_KEY": "your_api_key",
-           "NODE_ENV": "production"
-         }
-       }
-     }
-   }
-   ```
-
-3. **Restart Claude Desktop** completely (Cmd+Q on macOS, Alt+F4 on Windows)
-
-### Cursor
-
-1. Open Cursor
-2. Go to **Settings** (Cmd+, or Ctrl+,)
-3. Search for "MCP" in settings
-4. Click "Edit in settings.json"
-5. Add the configuration:
-   ```json
-   {
-     "mcp.servers": {
-       "namecheap-registrar": {
-         "command": "node",
-         "args": ["/absolute/path/to/namecheap-mcp/dist/index.js"],
-         "env": {
-           "NAMECHEAP_USERNAME": "your_username",
-           "NAMECHEAP_API_KEY": "your_api_key",
-           "NODE_ENV": "production"
-         }
-       }
-     }
-   }
-   ```
-6. Restart Cursor
-
-### Roo Code (Cline)
-
-1. Open Roo Code
-2. Install the Cline extension if not already installed
-3. Open Cline settings (click the gear icon in Cline panel)
-4. Add to MCP Servers:
-   ```json
-   {
-     "namecheap-registrar": {
-       "command": "node",
-       "args": ["/absolute/path/to/namecheap-mcp/dist/index.js"],
-       "env": {
-         "NAMECHEAP_USERNAME": "your_username",
-         "NAMECHEAP_API_KEY": "your_api_key",
-         "NODE_ENV": "production"
-       }
-     }
-   }
-   ```
-5. Save and restart the extension
-
-### Claude Code
-
-1. Install Claude Code if you haven't already:
-   ```bash
-   npm install -g @anthropic-ai/claude-code
-   ```
-   See [Claude Code Overview](https://docs.anthropic.com/en/docs/claude-code/overview) for more details.
-
-2. Run this single command to add the MCP server:
-   ```bash
-   claude mcp add-json namecheap-registrar '{"command":"node","args":["/absolute/path/to/namecheap-mcp/dist/index.js"],"env":{"NAMECHEAP_USERNAME":"your_username","NAMECHEAP_API_KEY":"your_api_key","NODE_ENV":"production"}}'
-   ```
-   (Replace `/absolute/path/to/namecheap-mcp` with your actual path and add your credentials)
-
-For more information on MCP with Claude Code, see the [MCP Tutorial](https://docs.anthropic.com/en/docs/claude-code/tutorials#set-up-model-context-protocol-mcp).
-
-## Usage Examples
-
-### Check Domain Availability
-
-```
-"Is example123.com available?"
-"Check if mydomain.io is taken"
-"Can I register coolwebsite.net?"
-```
-
-**Example Response:**
-```
-Good news! The domain example123.com is available for registration.
-
-Would you like to:
-- Get pricing information for this domain?
-- Register this domain?
-- Check availability of other domains?
-```
-
-### Get Domain Pricing
-
-```
-"How much does a .com domain cost?"
-"What's the price for .io domains?"
-"Show me pricing for example.com"
-```
-
-**Example Response:**
-```
-Here's the pricing information for .com domains:
-
-Registration Pricing:
-• 1 year: $9.98
-• 2 years: $24.96
-• 5 years: $69.90
-• 10 years: $144.80
-
-Future Renewal: $12.98/year
-Transfer cost: $9.98
-```
-
-### Register a Domain
-
-Domain registration is a two-step process for safety:
-
-**Step 1 - Preview Registration:**
-```
-"Register mydomain.com"
-"Buy example.net for 2 years"
-"Register coolsite.io with privacy protection"
-```
-
-**Step 2 - Confirm Purchase:**
-```
-"Confirm the purchase"
-"Yes, register the domain"
-```
-
-**Optional Parameters:**
-- `years`: Registration period (1-10 years)
-- `nameservers`: Custom nameservers (comma-separated)
-- `enableWhoisPrivacy`: Enable/disable WhoisGuard (default: true)
 
 ## Available Tools
 
@@ -273,139 +120,73 @@ Register a new domain name.
 - `confirmPurchase` (string, optional) - Set to "true" to complete purchase
 - `enableWhoisPrivacy` (string, optional) - Enable WhoisGuard (default: "true")
 
-## Troubleshooting
+## Usage Examples
 
-### Server Not Connecting
-
-1. **Check logs directory exists:**
-   ```bash
-   mkdir -p logs
-   ```
-
-2. **Verify configuration path:**
-   - Ensure the path is absolute, not relative
-   - Use forward slashes even on Windows
-
-3. **Test the server manually:**
-   ```bash
-   node dist/index.js
-   ```
-
-### Common API Errors
-
-| Error | Solution |
-|-------|----------|
-| "Invalid API Key" | Verify API key in Namecheap account |
-| "IP Not Whitelisted" | Add your IP to Namecheap whitelist |
-| "Domain Unavailable" | Domain is already registered |
-| "Insufficient Funds" | Add funds to Namecheap account |
-
-### Debug Mode
-
-View server logs:
-```bash
-tail -f logs/mcp-server-*.log
+### Check Domain Availability
+```
+"Is example123.com available?"
+"Check if mydomain.io is taken"
 ```
 
-## Testing
-
-### Run Test Suite
-```bash
-npm test
+### Get Domain Pricing
+```
+"How much does a .com domain cost?"
+"What's the price for .io domains?"
 ```
 
-### Test Individual Features
-```bash
-node test-features.js
+### Register a Domain
+Domain registration is a two-step process for safety:
+
+**Step 1 - Preview:**
+```
+"Register mydomain.com"
 ```
 
-### Sandbox Mode
+**Step 2 - Confirm:**
+```
+"Confirm the purchase"
+```
 
-For testing without real purchases:
-1. Set `NODE_ENV=sandbox` in `.env`
-2. Get sandbox API credentials from Namecheap
-3. Use test credit card numbers for purchases
+## Sandbox Mode
 
-## Security Best Practices
+For testing without real purchases, set `NODE_ENV=sandbox`:
 
-- **Never commit API keys** - Use `.env` files
-- **Rotate API keys regularly** - Every 90 days recommended
-- **Monitor account activity** - Check for unauthorized use
-- **Use sandbox for testing** - Avoid accidental purchases
-- **Limit IP whitelist** - Only add necessary IPs
+```json
+{
+  "env": {
+    "NC_USERNAME": "your_username",
+    "NC_API_KEY": "your_sandbox_api_key",
+    "NODE_ENV": "sandbox"
+  }
+}
+```
 
 ## Development
 
-### Project Structure
+### Local Setup
 
-```
-namecheap-mcp/
-├── src/
-│   ├── index.ts              # Main server entry
-│   ├── tools/                # MCP tool implementations
-│   │   ├── CheckDomainTool.ts
-│   │   ├── GetPricingTool.ts
-│   │   └── RegisterDomainTool.ts
-│   └── utils/                # Utility functions
-│       └── ipDetection.ts
-├── dist/                     # Compiled JavaScript
-├── logs/                     # Server logs
-├── test/                     # Test files
-├── .env.example              # Example environment
-├── registrant-profile.example.json
-├── package.json
-├── tsconfig.json
-└── README.md
-```
-
-### Development Mode
-
-```bash
-# Install dependencies
-npm install
-
-# Run in watch mode
-npm run dev
-
-# Run tests
-npm test
-```
-
-### Building for Production
-
-```bash
-npm run build
-```
-
-## Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Build the project:
+   ```bash
+   npm run build
+   ```
+4. Run locally:
+   ```bash
+   NC_USERNAME=your_username NC_API_KEY=your_key node dist/index.js
+   ```
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT
 
 ## Support
 
-- 🐛 [Report Issues](https://github.com/webdevtodayjason/namecheap-mcp/issues)
-- 💬 [Discussions](https://github.com/webdevtodayjason/namecheap-mcp/discussions)
-- 📧 Email: jason@webdevtoday.com
-
-## Acknowledgments
-
-- Forked from [deployTo-Dev/mcp-namecheap-registrar](https://github.com/deployTo-Dev/mcp-namecheap-registrar) - Thanks to the original author for the foundation!
-- Built with [MCP Framework](https://modelcontextprotocol.io)
-- Powered by [Namecheap API](https://www.namecheap.com/support/api/intro/)
-- Compatible with [Claude](https://claude.ai) by Anthropic
-- Works with [Cursor](https://cursor.sh) IDE
-- Supports [Roo Code](https://roo.app) with Cline
+For issues or questions, please open an issue on GitHub.
 
 ---
 
-Made with ❤️ by Jason Brashear
+Made with ❤️ by Jason Brashear (WebDevToday)

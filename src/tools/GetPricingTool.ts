@@ -72,11 +72,11 @@ ${pricingData.isPremium ? 'This is a premium domain with special pricing.' : ''}
   }
   
   private async callNamecheapApi(command: string, params: Record<string, string> = {}): Promise<any> {
-    const apiKey = process.env.NAMECHEAP_API_KEY;
-    const username = process.env.NAMECHEAP_USERNAME;
+    const apiKey = process.env.NC_API_KEY || process.env.NAMECHEAP_API_KEY;
+    const username = process.env.NC_USERNAME || process.env.NAMECHEAP_USERNAME;
     
     if (!apiKey || !username) {
-      throw new Error('Namecheap API credentials not configured. Please set NAMECHEAP_API_KEY and NAMECHEAP_USERNAME environment variables.');
+      throw new Error('Namecheap API credentials not configured. Please set NC_API_KEY and NC_USERNAME environment variables.');
     }
     
     const apiUrl = process.env.NODE_ENV === 'production' 

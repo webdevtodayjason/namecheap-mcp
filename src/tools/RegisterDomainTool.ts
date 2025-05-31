@@ -254,11 +254,11 @@ your Namecheap account status and API limits.
   }
 
   private async callNamecheapApi(command: string, params: Record<string, string> = {}): Promise<any> {
-    const apiKey = process.env.NAMECHEAP_API_KEY;
-    const username = process.env.NAMECHEAP_USERNAME;
+    const apiKey = process.env.NC_API_KEY || process.env.NAMECHEAP_API_KEY;
+    const username = process.env.NC_USERNAME || process.env.NAMECHEAP_USERNAME;
     
     if (!apiKey || !username) {
-      throw new Error('Namecheap API credentials not configured. Please set NAMECHEAP_API_KEY and NAMECHEAP_USERNAME environment variables.');
+      throw new Error('Namecheap API credentials not configured. Please set NC_API_KEY and NC_USERNAME environment variables.');
     }
     
     const apiUrl = process.env.NODE_ENV === 'production' 
@@ -367,59 +367,70 @@ your Namecheap account status and API limits.
   }
 
   private loadRegistrantProfile(): RegistrantProfile {
-    // Try multiple strategies to find the profile
-    let profilePath = '';
     let profile: RegistrantProfile | null = null;
     
-    // Strategy 1: Using current working directory
-    const cwd = process.cwd();
-    const cwdProfilePath = path.join(cwd, 'registrant-profile.json');
-    
-    // Strategy 2: Using path relative to this file
-    const thisFilePath = __dirname; // Should be dist/tools
-    const projectRoot = path.resolve(thisFilePath, '../..');
-    const relativeProfilePath = path.join(projectRoot, 'registrant-profile.json');
-    
-    // Strategy 3: Using absolute path (fallback)
-    const possiblePaths = [
-      cwdProfilePath,
-      relativeProfilePath,
-      // Add any other potential locations here
-    ];
-    
-    for (const potentialPath of possiblePaths) {
-      if (fs.existsSync(potentialPath)) {
-        profilePath = potentialPath;
-        break;
+    // First, check if registrant profile is provided via environment variable
+    if (process.env.REGISTRANT_PROFILE) {
+      try {
+        profile = JSON.parse(process.env.REGISTRANT_PROFILE) as RegistrantProfile;
+        console.log('Loaded registrant profile from environment variable');
+      } catch (error) {
+        throw new Error('REGISTRANT_PROFILE environment variable contains invalid JSON. Please check the format.');
       }
-    }
-    
-    if (!profilePath) {
-      throw new Error('Registrant profile not found. Please create a registrant-profile.json file in the project root.');
-    }
-    
-    try {
-      const profileData = fs.readFileSync(profilePath, 'utf8');
-      profile = JSON.parse(profileData) as RegistrantProfile;
+    } else {
+      // Try multiple strategies to find the profile file
+      let profilePath = '';
       
-      // Validate the profile has required fields
-      const requiredFields = ['firstName', 'lastName', 'address1', 'city', 
-                              'stateProvince', 'postalCode', 'country', 
-                              'phone', 'email'];
+      // Strategy 1: Using current working directory
+      const cwd = process.cwd();
+      const cwdProfilePath = path.join(cwd, 'registrant-profile.json');
       
-      for (const field of requiredFields) {
-        if (!profile[field as keyof RegistrantProfile]) {
-          throw new Error(`Registrant profile is missing required field: ${field}`);
+      // Strategy 2: Using path relative to this file
+      const thisFilePath = __dirname; // Should be dist/tools
+      const projectRoot = path.resolve(thisFilePath, '../..');
+      const relativeProfilePath = path.join(projectRoot, 'registrant-profile.json');
+      
+      // Strategy 3: Using absolute path (fallback)
+      const possiblePaths = [
+        cwdProfilePath,
+        relativeProfilePath,
+        // Add any other potential locations here
+      ];
+      
+      for (const potentialPath of possiblePaths) {
+        if (fs.existsSync(potentialPath)) {
+          profilePath = potentialPath;
+          break;
         }
       }
       
-      return profile;
-    } catch (error) {
-      if (error instanceof SyntaxError) {
-        throw new Error('Registrant profile contains invalid JSON. Please check the format.');
+      if (!profilePath) {
+        throw new Error('Registrant profile not found. Please provide REGISTRANT_PROFILE environment variable or create a registrant-profile.json file.');
       }
-      throw error;
+      
+      try {
+        const profileData = fs.readFileSync(profilePath, 'utf8');
+        profile = JSON.parse(profileData) as RegistrantProfile;
+      } catch (error) {
+        if (error instanceof SyntaxError) {
+          throw new Error('Registrant profile contains invalid JSON. Please check the format.');
+        }
+        throw error;
+      }
     }
+    
+    // Validate the profile has required fields
+    const requiredFields = ['firstName', 'lastName', 'address1', 'city', 
+                            'stateProvince', 'postalCode', 'country', 
+                            'phone', 'email'];
+    
+    for (const field of requiredFields) {
+      if (!profile![field as keyof RegistrantProfile]) {
+        throw new Error(`Registrant profile is missing required field: ${field}`);
+      }
+    }
+    
+    return profile!;
   }
   
   private formatProfileForDisplay(profile: RegistrantProfile): string {

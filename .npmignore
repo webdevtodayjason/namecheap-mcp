@@ -1,0 +1,48 @@
+# Source files (we ship compiled JS)
+src/
+*.ts
+!*.d.ts
+
+# Development files
+.env
+.env.*
+registrant-profile.json
+
+# Git
+.git
+.gitignore
+
+# Build tools
+tsconfig.json
+.eslintrc.*
+nodemon.json
+
+# Scripts
+setup.sh
+start-mcp.sh
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test files
+test/
+tests/
+*.test.js
+*.spec.js
+
+# Documentation files (optional - remove if you want to include them)
+CONTRIBUTING.md
+
+# Dependencies
+node_modules/
