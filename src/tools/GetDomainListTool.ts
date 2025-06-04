@@ -77,12 +77,21 @@ class GetDomainListTool extends MCPTool<GetDomainListInput> {
 
       const apiResponse = await this.callNamecheapApi('namecheap.domains.getList', params);
       
-      const paging = apiResponse.Paging.$;
-      const domains = apiResponse.DomainGetListResult.Domain;
-      
-      if (!domains) {
+      // Check if response has expected structure
+      if (!apiResponse.Paging || !apiResponse.Paging.$) {
+        console.error('Unexpected API response structure:', JSON.stringify(apiResponse, null, 2));
         return this.formatTextResponse("No domains found in your account.");
       }
+      
+      const paging = apiResponse.Paging.$;
+      
+      // Check if there are any domains
+      if (!apiResponse.DomainGetListResult || !apiResponse.DomainGetListResult.Domain) {
+        const totalItems = paging.TotalItems || '0';
+        return this.formatTextResponse(`You have ${totalItems} domains in your account.`);
+      }
+      
+      const domains = apiResponse.DomainGetListResult.Domain;
 
       // Handle both single domain and array of domains
       const domainList = Array.isArray(domains) ? domains : [domains];
@@ -90,15 +99,22 @@ class GetDomainListTool extends MCPTool<GetDomainListInput> {
       let response = `Found ${paging.TotalItems} domain(s) (Page ${paging.CurrentPage}/${paging.TotalPages})\\n\\n`;
       
       domainList.forEach((domain: any) => {
-        const attrs = domain.$;
+        const attrs = domain.$ || domain;
+        
+        // Skip if no attributes
+        if (!attrs.Name) {
+          console.error('Domain entry missing Name:', domain);
+          return;
+        }
+        
         const status = attrs.IsExpired === 'true' ? 'EXPIRED' : 
                       attrs.IsLocked === 'true' ? 'LOCKED' : 'ACTIVE';
         const autoRenew = attrs.AutoRenew === 'true' ? 'Yes' : 'No';
         
         response += `Domain: ${attrs.Name}\\n`;
         response += `  Status: ${status}\\n`;
-        response += `  Created: ${attrs.Created}\\n`;
-        response += `  Expires: ${attrs.Expires}\\n`;
+        response += `  Created: ${attrs.Created || 'N/A'}\\n`;
+        response += `  Expires: ${attrs.Expires || 'N/A'}\\n`;
         response += `  Auto-Renew: ${autoRenew}\\n`;
         
         if (attrs.WhoisGuard && attrs.WhoisGuard !== 'NOTPRESENT') {

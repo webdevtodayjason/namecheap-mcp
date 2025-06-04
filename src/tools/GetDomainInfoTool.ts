@@ -42,17 +42,22 @@ class GetDomainInfoTool extends MCPTool<GetDomainInfoInput> {
         DomainName: domain
       });
       
-      const domainDetail = apiResponse.DomainGetInfoResult.DomainDetails;
-      const whoisGuard = apiResponse.DomainGetInfoResult.Whoisguard;
-      const dnsDetails = apiResponse.DomainGetInfoResult.DnsDetails;
-      const modificationRights = apiResponse.DomainGetInfoResult.Modificationrights;
+      if (!apiResponse.DomainGetInfoResult) {
+        return this.formatTextResponse(`Unable to retrieve information for domain: ${domain}`);
+      }
+      
+      const result = apiResponse.DomainGetInfoResult;
+      const domainDetail = result.DomainDetails || {};
+      const whoisGuard = result.Whoisguard || {};
+      const dnsDetails = result.DnsDetails || {};
+      const modificationRights = result.Modificationrights || {};
       
       let response = `Domain Information for ${domain}\\n\\n`;
       
       // Basic domain details
       response += `Status Details:\\n`;
-      response += `  Created: ${domainDetail.CreatedDate}\\n`;
-      response += `  Expires: ${domainDetail.ExpiredDate}\\n`;
+      response += `  Created: ${domainDetail.CreatedDate || 'N/A'}\\n`;
+      response += `  Expires: ${domainDetail.ExpiredDate || 'N/A'}\\n`;
       response += `  Days until expiry: ${domainDetail.NumYears || 'N/A'}\\n`;
       
       // Domain status flags
