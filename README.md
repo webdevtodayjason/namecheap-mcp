@@ -11,17 +11,20 @@ Managing domain registrations typically requires navigating complex web interfac
 
 ## 💡 The Solution
 
-The Namecheap MCP Server brings domain management directly into your AI assistant. Check availability, compare prices, and register domains using natural language - all without leaving your conversation.
+The Namecheap MCP Server brings comprehensive domain management directly into your AI assistant. Check availability, manage your portfolio, view DNS records, and register domains using natural language - all without leaving your conversation.
 
 ```
+You: "Show me all my domains"
+Assistant: "You have 12 domains. 2 are expiring soon: myblog.com (expires in 15 days)..."
+
+You: "Get DNS records for myblog.com"
+Assistant: "myblog.com has 4 A records, 2 MX records for email..."
+
 You: "Is mycoolstartup.com available?"
-Assistant: "Yes, mycoolstartup.com is available! Would you like to register it?"
+Assistant: "Yes, mycoolstartup.com is available! A .com costs $9.58/year."
 
-You: "What's the price for a .io domain?"
-Assistant: "A .io domain costs $32.98 for the first year."
-
-You: "Register mycoolstartup.io for 2 years"
-Assistant: "I'll register mycoolstartup.io for 2 years. Total: $65.96. Confirm?"
+You: "Register it for 2 years"
+Assistant: "I'll register mycoolstartup.com for 2 years. Total: $19.16. Confirm?"
 ```
 
 ## ⚠️ Important Security Warning
@@ -165,7 +168,9 @@ Create `registrant-profile.json`:
 
 ## 🛠️ Available Tools
 
-### `check_domain`
+### Domain Search & Information
+
+#### `check_domain`
 Check if a domain is available for registration.
 
 ```
@@ -173,7 +178,34 @@ Check if a domain is available for registration.
 "Check mydomain.io"
 ```
 
-### `get_tld_pricing`
+#### `get_domain_list`
+List all domains in your Namecheap account with filtering options.
+
+```
+"Show me all my domains"
+"List my expiring domains"
+"Search for domains containing 'blog'"
+```
+
+#### `get_domain_info`
+Get detailed information about a specific domain.
+
+```
+"Get info for mydomain.com"
+"Show me details about example.com"
+```
+
+#### `get_domain_contacts`
+Retrieve contact information for a domain.
+
+```
+"Show contacts for mydomain.com"
+"Get registrant info for example.com"
+```
+
+### Domain Management
+
+#### `get_tld_pricing`
 Get current pricing for any TLD.
 
 ```
@@ -181,12 +213,22 @@ Get current pricing for any TLD.
 "Price for .io domains"
 ```
 
-### `register_domain`
+#### `register_domain`
 Register a domain with optional WhoisGuard protection.
 
 ```
 "Register mydomain.com"
 "Register example.io for 2 years"
+```
+
+### DNS Management
+
+#### `get_dns_hosts`
+Retrieve DNS records for domains using Namecheap DNS.
+
+```
+"Show DNS records for mydomain.com"
+"Get DNS settings for example.com"
 ```
 
 ## 🧪 Sandbox Mode
