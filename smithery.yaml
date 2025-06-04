@@ -1,0 +1,61 @@
+# Smithery configuration file: https://smithery.ai/docs/build/project-config
+
+startCommand:
+  type: stdio
+  commandFunction:
+    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
+    |-
+    (config) => ({ command: 'node', args: ['dist/index.js'], env: { NC_USERNAME: config.ncUsername, NC_API_KEY: config.ncApiKey, NODE_ENV: config.nodeEnv || 'production', ...(config.registrantProfile ? { REGISTRANT_PROFILE: JSON.stringify(config.registrantProfile) } : {}) } })
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    type: object
+    required:
+      - ncUsername
+      - ncApiKey
+    properties:
+      ncUsername:
+        type: string
+        description: Namecheap API username
+      ncApiKey:
+        type: string
+        description: Namecheap API key
+      nodeEnv:
+        type: string
+        default: production
+        description: Node environment
+      registrantProfile:
+        type: object
+        properties:
+          firstName:
+            type: string
+          lastName:
+            type: string
+          address1:
+            type: string
+          city:
+            type: string
+          stateProvince:
+            type: string
+          postalCode:
+            type: string
+          country:
+            type: string
+          phone:
+            type: string
+          email:
+            type: string
+        description: Registrant profile information
+  exampleConfig:
+    ncUsername: your_username
+    ncApiKey: your_api_key
+    nodeEnv: sandbox
+    registrantProfile:
+      firstName: John
+      lastName: Doe
+      address1: 123 Main St
+      city: New York
+      stateProvince: NY
+      postalCode: "10001"
+      country: US
+      phone: "+1.2125551234"
+      email: john@example.com

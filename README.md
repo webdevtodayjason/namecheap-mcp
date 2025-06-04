@@ -1,5 +1,7 @@
 # Namecheap MCP Server
 
+[![smithery badge](https://smithery.ai/badge/@webdevtodayjason/namecheap-mcp)](https://smithery.ai/server/@webdevtodayjason/namecheap-mcp)
+
 An MCP (Model Context Protocol) server that provides tools for interacting with the Namecheap domain registration API. Check domain availability, get pricing, and register domains through Claude Desktop or any MCP-compatible client.
 
 ## ⚠️ Important Security Warning
@@ -27,6 +29,14 @@ To use the Namecheap API, your account must meet **one** of these requirements:
 - Have at least $50 spent within the last 2 years
 
 ## Installation
+
+### Installing via Smithery
+
+To install Namecheap Domains for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@webdevtodayjason/namecheap-mcp):
+
+```bash
+npx -y @smithery/cli install @webdevtodayjason/namecheap-mcp --client claude
+```
 
 You can run this MCP server using `npx` without installing it locally:
 
