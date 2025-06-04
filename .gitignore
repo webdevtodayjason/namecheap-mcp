@@ -86,4 +86,7 @@ $RECYCLE.BIN/
 .node_repl_history
 
 # Configuration data
-.cursor-namecheap-domains-* 
+.cursor-namecheap-domains-*
+
+# Claude AI context
+.claude/ 
