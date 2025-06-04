@@ -69,9 +69,6 @@ class GetDNSHostsTool extends MCPTool<GetDNSHostsInput> {
         TLD: tld
       });
       
-      // Debug log
-      console.error('DNS API Response:', JSON.stringify(apiResponse, null, 2));
-      
       if (!apiResponse || !apiResponse.DomainDNSGetHostsResult) {
         return this.formatTextResponse(
           `Unable to retrieve DNS records for ${domain}. ` +
@@ -98,13 +95,16 @@ class GetDNSHostsTool extends MCPTool<GetDNSHostsInput> {
       
       let response = `DNS Records for ${domain}\\n\\n`;
       
-      if (!dnsResult.Host) {
+      // Check for both Host and host (API returns lowercase)
+      const hostData = dnsResult.Host || dnsResult.host;
+      
+      if (!hostData) {
         response += `No DNS records found. The domain is using Namecheap DNS but has no configured records.`;
         return this.formatTextResponse(response);
       }
       
       // Handle both single host and array of hosts
-      const hosts = Array.isArray(dnsResult.Host) ? dnsResult.Host : [dnsResult.Host];
+      const hosts = Array.isArray(hostData) ? hostData : [hostData];
       
       // Group records by type for better readability
       const recordsByType: Record<string, any[]> = {};
@@ -196,8 +196,6 @@ class GetDNSHostsTool extends MCPTool<GetDNSHostsInput> {
       const parser = new xml2js.Parser({ explicitArray: false });
       const result = await parser.parseStringPromise(response.data);
       
-      // Debug log
-      console.error('Raw DNS API result:', JSON.stringify(result, null, 2).substring(0, 500));
       
       // Check if we have a valid API response
       if (!result || !result.ApiResponse) {

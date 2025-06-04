@@ -31,7 +31,7 @@ class GetDomainListTool extends MCPTool<GetDomainListInput> {
     },
     pageSize: {
       type: z.string().optional(),
-      description: "Number of domains per page (10-100, default: 20)",
+      description: "Number of domains per page (must be 10-100, default: 20)",
     },
     sortBy: {
       type: z.string().optional(),
@@ -64,10 +64,14 @@ class GetDomainListTool extends MCPTool<GetDomainListInput> {
     } = input;
 
     try {
+      // Validate page size is within Namecheap's allowed range (10-100)
+      const pageSizeNum = parseInt(pageSize);
+      const validPageSize = Math.max(10, Math.min(100, pageSizeNum || 20));
+      
       const params: Record<string, string> = {
         ListType: listType.toUpperCase(),
         Page: page,
-        PageSize: pageSize,
+        PageSize: String(validPageSize),
         SortBy: sortBy.toUpperCase()
       };
 
@@ -76,9 +80,6 @@ class GetDomainListTool extends MCPTool<GetDomainListInput> {
       }
 
       const apiResponse = await this.callNamecheapApi('namecheap.domains.getList', params);
-      
-      // Debug log the entire response
-      console.error('API Response structure:', JSON.stringify(apiResponse, null, 2));
       
       // Check if response has expected structure
       if (!apiResponse || typeof apiResponse !== 'object') {
@@ -91,12 +92,13 @@ class GetDomainListTool extends MCPTool<GetDomainListInput> {
         return this.formatTextResponse("You have 0 domains in your account.");
       }
       
-      if (!apiResponse.Paging.$) {
-        console.error('Missing Paging.$ in response:', apiResponse);
+      // Handle both Paging.$ and direct Paging attributes
+      const paging = apiResponse.Paging.$ || apiResponse.Paging;
+      
+      if (!paging) {
+        console.error('Missing Paging attributes in response:', apiResponse);
         return this.formatTextResponse("Unable to parse domain list response.");
       }
-      
-      const paging = apiResponse.Paging.$;
       
       // Check if there are any domains
       if (!apiResponse.DomainGetListResult || !apiResponse.DomainGetListResult.Domain) {
@@ -109,7 +111,12 @@ class GetDomainListTool extends MCPTool<GetDomainListInput> {
       // Handle both single domain and array of domains
       const domainList = Array.isArray(domains) ? domains : [domains];
       
-      let response = `Found ${paging.TotalItems} domain(s) (Page ${paging.CurrentPage}/${paging.TotalPages})\\n\\n`;
+      // Calculate total pages if not provided
+      const totalItemsCount = parseInt(paging.TotalItems) || 0;
+      const pageSizeCount = parseInt(paging.PageSize) || 20;
+      const totalPages = Math.ceil(totalItemsCount / pageSizeCount);
+      
+      let response = `Found ${paging.TotalItems} domain(s) (Page ${paging.CurrentPage}/${totalPages})\\n\\n`;
       
       domainList.forEach((domain: any) => {
         const attrs = domain.$ || domain;
@@ -137,8 +144,8 @@ class GetDomainListTool extends MCPTool<GetDomainListInput> {
         response += `\\n`;
       });
 
-      if (parseInt(paging.TotalPages) > 1) {
-        response += `\\nTo see more domains, use page parameter (1-${paging.TotalPages})`;
+      if (totalPages > 1) {
+        response += `\\nTo see more domains, use page parameter (1-${totalPages})`;
       }
 
       return this.formatTextResponse(response);
@@ -176,8 +183,6 @@ class GetDomainListTool extends MCPTool<GetDomainListInput> {
       const parser = new xml2js.Parser({ explicitArray: false });
       const result = await parser.parseStringPromise(response.data);
       
-      // Log raw response for debugging
-      console.error('Raw API result:', JSON.stringify(result, null, 2).substring(0, 500));
       
       // Check if we have a valid API response
       if (!result || !result.ApiResponse) {
