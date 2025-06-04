@@ -69,7 +69,23 @@ class GetDNSHostsTool extends MCPTool<GetDNSHostsInput> {
         TLD: tld
       });
       
+      // Debug log
+      console.error('DNS API Response:', JSON.stringify(apiResponse, null, 2));
+      
+      if (!apiResponse || !apiResponse.DomainDNSGetHostsResult) {
+        return this.formatTextResponse(
+          `Unable to retrieve DNS records for ${domain}. ` +
+          `The domain may not exist or you may not have access to it.`
+        );
+      }
+      
       const dnsResult = apiResponse.DomainDNSGetHostsResult;
+      
+      // Check if we have the attributes
+      if (!dnsResult.$ || typeof dnsResult.$ !== 'object') {
+        console.error('Missing DNS result attributes:', dnsResult);
+        return this.formatTextResponse(`Unable to determine DNS status for ${domain}.`);
+      }
       
       // Check if domain is using Namecheap DNS
       if (dnsResult.$.IsUsingOurDNS === 'false') {
@@ -93,11 +109,18 @@ class GetDNSHostsTool extends MCPTool<GetDNSHostsInput> {
       // Group records by type for better readability
       const recordsByType: Record<string, any[]> = {};
       hosts.forEach((host: any) => {
-        const type = host.$.Type;
+        // Handle both host.$ and direct host attributes
+        const hostAttrs = host.$ || host;
+        if (!hostAttrs.Type) {
+          console.error('Host missing Type attribute:', host);
+          return;
+        }
+        
+        const type = hostAttrs.Type;
         if (!recordsByType[type]) {
           recordsByType[type] = [];
         }
-        recordsByType[type].push(host.$);
+        recordsByType[type].push(hostAttrs);
       });
       
       // Display records grouped by type
@@ -173,8 +196,16 @@ class GetDNSHostsTool extends MCPTool<GetDNSHostsInput> {
       const parser = new xml2js.Parser({ explicitArray: false });
       const result = await parser.parseStringPromise(response.data);
       
+      // Debug log
+      console.error('Raw DNS API result:', JSON.stringify(result, null, 2).substring(0, 500));
+      
+      // Check if we have a valid API response
+      if (!result || !result.ApiResponse) {
+        throw new Error('Invalid API response format');
+      }
+      
       // Check for IP rejection errors
-      if (result.ApiResponse.$.Status === 'ERROR' && result.ApiResponse.Errors) {
+      if (result.ApiResponse.$ && result.ApiResponse.$.Status === 'ERROR' && result.ApiResponse.Errors) {
         const errorMsg = typeof result.ApiResponse.Errors.Error === 'string' 
           ? result.ApiResponse.Errors.Error 
           : Array.isArray(result.ApiResponse.Errors.Error) 
@@ -189,6 +220,17 @@ class GetDNSHostsTool extends MCPTool<GetDNSHostsInput> {
           return this.callNamecheapApi(command, params);
         }
         throw new Error(`API Error: ${errorMsg}`);
+      }
+      
+      // Check for successful response
+      if (!result.ApiResponse.$ || result.ApiResponse.$.Status !== 'OK') {
+        console.error('Non-OK API status:', result.ApiResponse);
+        throw new Error('API request was not successful');
+      }
+      
+      // For DNS operations, we need the CommandResponse
+      if (command.includes('dns') && result.ApiResponse.CommandResponse) {
+        return result.ApiResponse.CommandResponse;
       }
       
       return result.ApiResponse;
