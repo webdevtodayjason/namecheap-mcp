@@ -77,10 +77,23 @@ class GetDomainListTool extends MCPTool<GetDomainListInput> {
 
       const apiResponse = await this.callNamecheapApi('namecheap.domains.getList', params);
       
+      // Debug log the entire response
+      console.error('API Response structure:', JSON.stringify(apiResponse, null, 2));
+      
       // Check if response has expected structure
-      if (!apiResponse.Paging || !apiResponse.Paging.$) {
-        console.error('Unexpected API response structure:', JSON.stringify(apiResponse, null, 2));
-        return this.formatTextResponse("No domains found in your account.");
+      if (!apiResponse || typeof apiResponse !== 'object') {
+        console.error('Invalid API response:', apiResponse);
+        return this.formatTextResponse("Invalid response from Namecheap API. Please try again.");
+      }
+      
+      if (!apiResponse.Paging) {
+        console.error('Missing Paging in response:', apiResponse);
+        return this.formatTextResponse("You have 0 domains in your account.");
+      }
+      
+      if (!apiResponse.Paging.$) {
+        console.error('Missing Paging.$ in response:', apiResponse);
+        return this.formatTextResponse("Unable to parse domain list response.");
       }
       
       const paging = apiResponse.Paging.$;
@@ -163,8 +176,16 @@ class GetDomainListTool extends MCPTool<GetDomainListInput> {
       const parser = new xml2js.Parser({ explicitArray: false });
       const result = await parser.parseStringPromise(response.data);
       
+      // Log raw response for debugging
+      console.error('Raw API result:', JSON.stringify(result, null, 2).substring(0, 500));
+      
+      // Check if we have a valid API response
+      if (!result || !result.ApiResponse) {
+        throw new Error('Invalid API response format');
+      }
+      
       // Check for IP rejection errors
-      if (result.ApiResponse.$.Status === 'ERROR' && result.ApiResponse.Errors) {
+      if (result.ApiResponse.$ && result.ApiResponse.$.Status === 'ERROR' && result.ApiResponse.Errors) {
         const errorMsg = typeof result.ApiResponse.Errors.Error === 'string' 
           ? result.ApiResponse.Errors.Error 
           : Array.isArray(result.ApiResponse.Errors.Error) 
@@ -179,6 +200,17 @@ class GetDomainListTool extends MCPTool<GetDomainListInput> {
           return this.callNamecheapApi(command, params);
         }
         throw new Error(`API Error: ${errorMsg}`);
+      }
+      
+      // Check for successful response
+      if (!result.ApiResponse.$ || result.ApiResponse.$.Status !== 'OK') {
+        console.error('Non-OK API status:', result.ApiResponse);
+        throw new Error('API request was not successful');
+      }
+      
+      // For domain list, we need the CommandResponse
+      if (command === 'namecheap.domains.getList' && result.ApiResponse.CommandResponse) {
+        return result.ApiResponse.CommandResponse;
       }
       
       return result.ApiResponse;
