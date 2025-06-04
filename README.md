@@ -2,6 +2,7 @@
 
 [![NPM Version](https://img.shields.io/npm/v/@webdevtoday/nc-mcp-server)](https://www.npmjs.com/package/@webdevtoday/nc-mcp-server)
 [![License](https://img.shields.io/npm/l/@webdevtoday/nc-mcp-server)](https://github.com/webdevtodayjason/nc-mcp-server/blob/main/LICENSE)
+[![smithery badge](https://smithery.ai/badge/@webdevtodayjason/namecheap-mcp)](https://smithery.ai/server/@webdevtodayjason/namecheap-mcp)
 [![Deploy on Smithery](https://smithery.ai/badge/deploy)](https://smithery.ai/server/@webdevtoday/namecheap-domains)
 
 ## 🚀 The Problem
@@ -243,9 +244,13 @@ NC_USERNAME=your_username NC_API_KEY=your_key npm start
 
 ### Deploy Your Own
 
-1. Fork this repository
-2. Modify as needed
-3. Deploy to Smithery using included `smithery.yaml` and `Dockerfile`
+To install Namecheap MCP Server for any client automatically via Smithery:
+
+```bash
+npx -y @smithery/cli@latest install @webdevtoday/namecheap-domains --client <CLIENT_NAME> --key <YOUR_SMITHERY_KEY>
+```
+
+You can find your Smithery key in the [Smithery.ai](https://smithery.ai) dashboard.
 
 ## 🤝 Contributing
 
