@@ -1,0 +1,32 @@
+runtime: custom
+
+# Configuration schema for the Namecheap MCP server
+config:
+  NC_USERNAME:
+    type: string
+    description: Your Namecheap API username
+    required: true
+  NC_API_KEY:
+    type: string
+    description: Your Namecheap API key
+    required: true
+  NC_CLIENT_IP:
+    type: string
+    description: Your whitelisted IP address for API access
+    required: true
+  REGISTRANT_PROFILE_PATH:
+    type: string
+    description: Path to registrant profile JSON file
+    default: ./registrant-profile.json
+    required: false
+
+metadata:
+  name: Namecheap Domain Registrar
+  description: MCP server for checking domain availability, pricing, and registration through Namecheap
+  version: 0.1.0
+  author: WebDevToday
+  license: MIT
+  capabilities:
+    - domain-check
+    - domain-pricing
+    - domain-registration
