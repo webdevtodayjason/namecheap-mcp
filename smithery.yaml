@@ -12,8 +12,9 @@ config:
     required: true
   NC_CLIENT_IP:
     type: string
-    description: Your whitelisted IP address for API access
-    required: true
+    description: Your whitelisted IP address for API access (leave empty for auto-detection, or find Smithery's IP in logs)
+    required: false
+    example: "123.45.67.89"
   REGISTRANT_PROFILE_PATH:
     type: string
     description: Path to registrant profile JSON file

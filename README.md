@@ -255,10 +255,19 @@ Test without making real purchases:
 - Verify your API key is correct
 - Check IP whitelisting
 
-### Connection Failed
-- Confirm your IP is whitelisted
-- Try updating your IP in Namecheap settings
-- Check if using VPN (may need to whitelist VPN IP)
+### Connection Failed / IP Not Whitelisted
+- Check the Smithery logs to find the actual IP being used
+- Add that IP to your Namecheap whitelist (Profile → Tools → API Access)
+- Alternatively, set NC_CLIENT_IP in Smithery configuration
+- Note: Smithery servers may use different IPs than expected
+
+### Invalid API Key Error
+1. Verify API access is enabled in Namecheap
+2. Check your account meets requirements:
+   - At least 20 domains, OR
+   - At least $50 balance, OR  
+   - At least $50 spent in last 2 years
+3. Ensure API key is correctly copied
 
 ### Registration Fails
 - Verify registrant profile is properly formatted

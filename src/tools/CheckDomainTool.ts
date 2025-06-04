@@ -96,8 +96,18 @@ class CheckDomainTool extends MCPTool<CheckDomainInput> {
             errorMsg.includes('IP not whitelisted') || 
             errorMsg.includes('Invalid IP'))) {
           resetIpCache();
-          // Retry once with a fresh IP
-          return this.callNamecheapApi(command, params);
+          const detectedIp = await detectPublicIp();
+          console.error(`IP whitelist error. Current IP: ${detectedIp}`);
+          throw new Error(
+            `IP not whitelisted. Please add ${detectedIp} to your Namecheap whitelist at Profile → Tools → API Access. ` +
+            `If running on Smithery, you may need to set NC_CLIENT_IP in your environment variables.`
+          );
+        }
+        if (errorMsg && errorMsg.includes('API Key is invalid')) {
+          throw new Error(
+            `${errorMsg}. Please check: 1) API key is correct, 2) API access is enabled in your Namecheap account, ` +
+            `3) Your account meets API requirements (20+ domains, $50+ balance, or $50+ spent)`
+          );
         }
         throw new Error(`API Error: ${errorMsg}`);
       }
