@@ -43,6 +43,7 @@ class GetDomainInfoTool extends MCPTool<GetDomainInfoInput> {
       });
       
       if (!apiResponse.DomainGetInfoResult) {
+        console.error('Missing DomainGetInfoResult in response');
         return this.formatTextResponse(`Unable to retrieve information for domain: ${domain}`);
       }
       
@@ -58,29 +59,44 @@ class GetDomainInfoTool extends MCPTool<GetDomainInfoInput> {
       response += `Status Details:\\n`;
       response += `  Created: ${domainDetail.CreatedDate || 'N/A'}\\n`;
       response += `  Expires: ${domainDetail.ExpiredDate || 'N/A'}\\n`;
-      response += `  Days until expiry: ${domainDetail.NumYears || 'N/A'}\\n`;
       
-      // Domain status flags
-      const statusFlags = [];
-      if (apiResponse.DomainGetInfoResult.StatusFlag) {
-        const flags = apiResponse.DomainGetInfoResult.StatusFlag;
-        if (flags.IsLocked === 'true') statusFlags.push('LOCKED');
-        if (flags.IsExpired === 'true') statusFlags.push('EXPIRED');
-        if (flags.IsPremium === 'true') statusFlags.push('PREMIUM');
+      // Calculate days until expiry
+      if (domainDetail.ExpiredDate) {
+        const expiryDate = new Date(domainDetail.ExpiredDate);
+        const today = new Date();
+        const daysUntilExpiry = Math.floor((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        response += `  Days until expiry: ${daysUntilExpiry}\\n`;
       }
-      if (statusFlags.length > 0) {
-        response += `  Status Flags: ${statusFlags.join(', ')}\\n`;
+      
+      // Domain status from main attributes
+      if (result.$) {
+        const isOwner = result.$.IsOwner === 'true';
+        const isPremium = result.$.IsPremium === 'true';
+        response += `  Owner: ${isOwner ? 'Yes' : 'No'} (${result.$.OwnerName || 'Unknown'})\\n`;
+        if (isPremium) {
+          response += `  Premium Domain: Yes\\n`;
+        }
+      }
+      
+      // Domain lock status
+      if (result.LockDetails !== undefined) {
+        const isLocked = result.LockDetails !== '';
+        response += `  Domain Lock: ${isLocked ? 'Enabled' : 'Disabled'}\\n`;
       }
       
       // WhoisGuard information
       response += `\\nPrivacy Protection:\\n`;
-      if (whoisGuard && whoisGuard.Enabled) {
-        response += `  WhoisGuard: ${whoisGuard.Enabled.$ === 'True' ? 'Enabled' : 'Disabled'}\\n`;
+      if (whoisGuard && whoisGuard.$) {
+        response += `  WhoisGuard: ${whoisGuard.$.Enabled === 'True' ? 'Enabled' : 'Disabled'}\\n`;
         if (whoisGuard.ID) {
           response += `  WhoisGuard ID: ${whoisGuard.ID}\\n`;
         }
         if (whoisGuard.ExpiredDate) {
           response += `  WhoisGuard Expires: ${whoisGuard.ExpiredDate}\\n`;
+        }
+        if (whoisGuard.EmailDetails && whoisGuard.EmailDetails.$) {
+          response += `  Protected Email: ${whoisGuard.EmailDetails.$.WhoisGuardEmail || 'N/A'}\\n`;
+          response += `  Forwards To: ${whoisGuard.EmailDetails.$.ForwardedTo || 'N/A'}\\n`;
         }
       } else {
         response += `  WhoisGuard: Not available\\n`;
@@ -88,8 +104,15 @@ class GetDomainInfoTool extends MCPTool<GetDomainInfoInput> {
       
       // DNS Provider
       response += `\\nDNS Configuration:\\n`;
-      response += `  DNS Provider: ${dnsDetails.ProviderType || 'Unknown'}\\n`;
-      response += `  Using Namecheap DNS: ${dnsDetails.IsUsingOurDNS === 'true' ? 'Yes' : 'No'}\\n`;
+      
+      // Check DnsDetails structure with attributes
+      if (dnsDetails.$) {
+        response += `  DNS Provider: ${dnsDetails.$.ProviderType || 'Unknown'}\\n`;
+        response += `  Using Namecheap DNS: ${dnsDetails.$.IsUsingOurDNS === 'true' ? 'Yes' : 'No'}\\n`;
+        if (dnsDetails.$.HostCount) {
+          response += `  DNS Host Records: ${dnsDetails.$.HostCount}\\n`;
+        }
+      }
       
       // Current nameservers
       if (dnsDetails.Nameserver) {
@@ -103,10 +126,11 @@ class GetDomainInfoTool extends MCPTool<GetDomainInfoInput> {
       }
       
       // Modification rights
-      if (modificationRights && modificationRights.All === 'true') {
-        response += `\\nModification Rights: Full access\\n`;
+      if (modificationRights && modificationRights.$) {
+        const hasFullRights = modificationRights.$.All === 'true';
+        response += `\\nModification Rights: ${hasFullRights ? 'Full access' : 'Limited'}\\n`;
       } else {
-        response += `\\nModification Rights: Limited\\n`;
+        response += `\\nModification Rights: Unknown\\n`;
       }
       
       return this.formatTextResponse(response);
@@ -160,6 +184,17 @@ class GetDomainInfoTool extends MCPTool<GetDomainInfoInput> {
           return this.callNamecheapApi(command, params);
         }
         throw new Error(`API Error: ${errorMsg}`);
+      }
+      
+      // Check for successful response
+      if (!result.ApiResponse.$ || result.ApiResponse.$.Status !== 'OK') {
+        console.error('Non-OK API status:', result.ApiResponse);
+        throw new Error('API request was not successful');
+      }
+      
+      // For domain info, we need the CommandResponse
+      if (command === 'namecheap.domains.getInfo' && result.ApiResponse.CommandResponse) {
+        return result.ApiResponse.CommandResponse;
       }
       
       return result.ApiResponse;
